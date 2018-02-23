@@ -1,4 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
+
+import { ErrorAlert } from 'pivotal-ui/react/alerts';
+import { DefaultButton } from 'pivotal-ui/react/buttons';
+import { Icon } from 'pivotal-ui/react/iconography';
+import { ListItem, UnorderedList } from 'pivotal-ui/react/lists';
+import { Panel } from 'pivotal-ui/react/panels';
 
 class NamespaceList extends Component {
   state = {
@@ -16,58 +22,56 @@ class NamespaceList extends Component {
     this.mounted = false;
   }
 
-  async fetch() {
-    try {
-      const res = await fetch('/api/v1/namespaces/');
-      const namespaces = await res.json();
-      if (!this.mounted) return;
-      this.setState({
-        loading: false,
-        namespaces
-      });
-    } catch (e) {
-      if (!this.mounted) return;
-      this.setState({
-        loading: false,
-        error: e
-      });
-    }
-  }
+  fetch = () => {
+    this.setState({ loading: true }, async () => {
+      try {
+        const res = await fetch('/api/v1/namespaces/');
+        if (res.status >= 400) throw new Error('Unable to load namespaces');
+        const namespaces = await res.json();
+        if (!this.mounted) return;
+        this.setState({
+          loading: false,
+          namespaces
+        });
+      } catch (e) {
+        if (!this.mounted) return;
+        this.setState({
+          loading: false,
+          error: e
+        });
+      }
+    });
+  };
 
   render() {
     const { loading, error, namespaces } = this.state;
 
-    if (error) {
-      return (
-        <div className="error">
-          Unable to load namesapces
-          <details>
-            {error}
-          </details>
-        </div>
-      );
-    }
-
     return (
-      <div className="NamespaceList">
-        Namespaces:
-        {loading
-          ? <div className="loading">Loading...</div>
-          : error
-            ? <div className="error">
-                Unable to load namesapces
-                <details>
-                  {error}
-                </details>
-              </div>
-            : <ul>
-                {namespaces.items.map(namespace => {
-                  const { name, uid } = namespace.metadata;
-                  return <li key={uid}>{name}</li>
-                })}
-              </ul>
+      <Panel header='Namespaces' loading={loading}>
+        {loading && !namespaces
+          ? <Icon src='spinner-md' style={{'fontSize': '48px'}} />
+          : <Fragment>
+            {error
+              ? <ErrorAlert withIcon>
+                  Unable to load namesapces
+                  <details>{'' + error}</details>
+                </ErrorAlert>
+              : <UnorderedList unstyled>
+                  {namespaces.items.map(namespace => {
+                    const { name, uid } = namespace.metadata;
+                    return <ListItem key={uid}>{name}</ListItem>
+                  })}
+                </UnorderedList>
+            }
+            <DefaultButton
+              disabled={loading}
+              onClick={this.fetch}
+            >
+              <Icon src='refresh' />
+            </DefaultButton>
+          </Fragment>
         }
-      </div>
+      </Panel>
     );
   }
 }

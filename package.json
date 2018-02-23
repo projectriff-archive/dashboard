@@ -4,6 +4,7 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
+    "pivotal-ui": "^14.0.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-scripts": "1.1.1"

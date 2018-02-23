@@ -4,5 +4,5 @@ COPY package.json package-lock.json ./
 RUN npm install --production
 RUN npm install -g serve@6
 COPY . ./
-RUN npm run build
-CMD ["serve", "-s", "build"]
+RUN PUBLIC_URL=. npm run build
+CMD ["/usr/local/bin/serve", "--ssl", "build"]

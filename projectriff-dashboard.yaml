@@ -1,0 +1,54 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    app: riff
+    component: dashboard
+  name: projectriff-dashboard
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: riff
+      component: dashboard
+  template:
+    metadata:
+      labels:
+        app: riff
+        component: dashboard
+    spec:
+      containers:
+      - name: projectriff-dashboard
+        image: projectriff/dashboard:0.0.5-snapshot
+        env:
+        - name: PORT
+          value: '8443'
+        ports:
+        - containerPort: 8443
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            scheme: HTTPS
+            path: /
+            port: 8443
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+      serviceAccountName: projectriff-dashboard
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: riff
+    component: dashboard
+  name: projectriff-dashboard
+spec:
+  ports:
+    - port: 443
+      targetPort: 8443
+  selector:
+    app: riff
+    component: dashboard

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import NamespaceList from './NamespaceList';
+import ResourceList from './ResourceList';
 import logo from './logo.svg';
 import './App.css';
 
@@ -13,6 +14,8 @@ class App extends Component {
         </header>
         <article className="App-intro">
           <NamespaceList />
+          <ResourceList namespace='default' type='functions' />
+          <ResourceList namespace='default' type='topics' />
         </article>
       </div>
     );

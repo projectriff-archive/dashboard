@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-
+import PropTypes from 'prop-types';
 import { ErrorAlert } from 'pivotal-ui/react/alerts';
 import { DefaultButton } from 'pivotal-ui/react/buttons';
 import { Collapse } from 'pivotal-ui/react/collapse';
@@ -7,11 +7,33 @@ import { Icon } from 'pivotal-ui/react/iconography';
 import { ListItem, UnorderedList } from 'pivotal-ui/react/lists';
 import { Panel } from 'pivotal-ui/react/panels';
 
-class NamespaceList extends Component {
+import { get, url } from './k8s';
+
+const strings = {
+  topics: {
+    singular: 'topic',
+    plural: 'topics'
+  },
+  functions: {
+    singular: 'function',
+    plural: 'functions'
+  }
+}
+
+function capitalize(str) {
+  return str[0].toUpperCase() + str.slice(1).toLowerCase();
+}
+
+class ResourceList extends Component {
+  static propTypes = {
+    namespace: PropTypes.string.isRequired,
+    type: PropTypes.string.isRequired
+  };
+
   state = {
     loading: true,
     error: null,
-    namespaces: null
+    resources: null
   };
 
   componentWillMount() {
@@ -23,16 +45,15 @@ class NamespaceList extends Component {
     this.mounted = false;
   }
 
-  fetch = () => {
+  fetch = (namespace = this.props.namespace) => {
     this.setState({ loading: true }, async () => {
       try {
-        const res = await fetch('/api/v1/namespaces');
-        if (res.status >= 400) throw new Error('Unable to load namespaces');
-        const namespaces = await res.json();
+        const { namespace, type } = this.props;
+        const resources = await get(url`/apis/projectriff.io/v1/namespaces/${namespace}/${type}`);
         if (!this.mounted) return;
         this.setState({
           loading: false,
-          namespaces
+          resources
         });
       } catch (e) {
         if (!this.mounted) return;
@@ -45,24 +66,26 @@ class NamespaceList extends Component {
   };
 
   render() {
-    const { loading, error, namespaces } = this.state;
+    const { type } = this.props;
+    const { loading, error, resources } = this.state;
 
     return (
-      <Panel header='Namespaces' loading={loading}>
-        {loading && !namespaces
+      <Panel header={capitalize(strings[type].plural)} loading={loading}>
+        {loading && !resources
           ? <Icon src='spinner-md' style={{'fontSize': '48px'}} />
           : <Fragment>
             {error
               ? <ErrorAlert withIcon>
-                  Unable to load namesapces
+                  Unable to load {strings[type].plural}
                   <Collapse header='Detail'>{'' + error}</Collapse>
                 </ErrorAlert>
-              : <UnorderedList unstyled>
-                  {namespaces.items.map(namespace => {
-                    const { name, uid } = namespace.metadata;
-                    return <ListItem key={uid}>{name}</ListItem>
-                  })}
-                </UnorderedList>
+              : resources.items.length
+                ? <UnorderedList unstyled>
+                    {resources.items.map(({ metadata: { name, uid }}) => {
+                      return <ListItem key={uid}>{name}</ListItem>
+                    })}
+                  </UnorderedList>
+                : `No ${strings[type].plural} found`
             }
             <DefaultButton
               disabled={loading}
@@ -77,4 +100,4 @@ class NamespaceList extends Component {
   }
 }
 
-export default NamespaceList;
+export default ResourceList;

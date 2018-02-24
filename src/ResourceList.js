@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { ErrorAlert } from 'pivotal-ui/react/alerts';
-import { DefaultButton } from 'pivotal-ui/react/buttons';
 import { Collapse } from 'pivotal-ui/react/collapse';
 import { Icon } from 'pivotal-ui/react/iconography';
 import { ListItem, UnorderedList } from 'pivotal-ui/react/lists';
@@ -87,12 +86,6 @@ class ResourceList extends Component {
                   </UnorderedList>
                 : `No ${strings[type].plural} found`
             }
-            <DefaultButton
-              disabled={loading}
-              onClick={this.fetch}
-            >
-              <Icon src='refresh' />
-            </DefaultButton>
           </Fragment>
         }
       </Panel>

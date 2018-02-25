@@ -1,7 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
-import { HashRouter as Router } from 'react-router-dom';
+import { Root } from './Root';
+import { reducer } from './redux';
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
 
-ReactDOM.render(<Router><App /></Router>, document.getElementById('root'));
+const store = createStore(
+  reducer,
+  applyMiddleware(thunk)
+);
+
+ReactDOM.render(
+  <Root store={store} />,
+  document.getElementById('root')
+);

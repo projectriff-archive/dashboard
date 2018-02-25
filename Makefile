@@ -10,3 +10,6 @@ test:
 
 dockerize:
 	docker build . -t projectriff/dashboard:$(TAG)
+
+dockerize-dev: dockerize
+	kubectl delete pod -l app=riff,component=dashboard

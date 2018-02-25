@@ -1,42 +1,33 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import NamespacePicker from './NamespacePicker';
-import ResourceList from './ResourceList';
+import Namespace from './Namespace';
 import './App.css';
 import { DefaultButton } from 'pivotal-ui/react/buttons';
 import { Icon } from 'pivotal-ui/react/iconography';
 import { Grid, FlexCol } from 'pivotal-ui/react/flex-grids';
-import {
-  Route,
-  Redirect,
-  Switch,
-  withRouter
-} from 'react-router-dom';
-
+import { Route, Redirect, Switch, withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { actions, selectors } from './redux';
 
 class App extends Component {
   static propTypes = {
-    history: PropTypes.object.isRequired
+    loading: PropTypes.bool.isRequired,
+    history: PropTypes.object.isRequired,
+    load: PropTypes.func.isRequired
   };
 
-  state = {
-    // horrible hack that needs to die
-    _refreshCount: 0
-  };
+  componentWillMount() {
+    this.props.load();
+  }
 
   switchNamespace = namespace => {
     const { history } = this.props;
     history.push(`/namespaces/${namespace}`);
   };
 
-  refresh = () => {
-    this.setState({
-      _refreshCount: this.state._refreshCount + 1
-    });
-  };
-
   render() {
-    const { _refreshCount } = this.state;
+    const { loading, namespaces } = this.props;
 
     return (
       <Switch>
@@ -45,23 +36,20 @@ class App extends Component {
           <Fragment>
             <Grid>
               <FlexCol fixed>
-                <NamespacePicker namespace={namespace} onChange={this.switchNamespace} />
+                <NamespacePicker
+                  namespace={namespace}
+                  namespaces={namespaces}
+                  onChange={this.switchNamespace}
+                  loading={loading}
+                />
               </FlexCol>
               <FlexCol fixed>
-                <DefaultButton onClick={this.refresh}>
+                <DefaultButton disabled={loading} onClick={this.props.load}>
                   <Icon src='refresh' />
                 </DefaultButton>
               </FlexCol>
             </Grid>
-            <Grid key={`${namespace}-${_refreshCount}`}>
-              {/* TODO remove key hack once components can handle prop updates */}
-              <FlexCol>
-                <ResourceList namespace={namespace} type='functions' />
-              </FlexCol>
-              <FlexCol>
-                <ResourceList namespace={namespace} type='topics' />
-              </FlexCol>
-            </Grid>
+            <Namespace namespace={namespace} />
           </Fragment>
         } />
         <Redirect to='/' />
@@ -70,4 +58,19 @@ class App extends Component {
   }
 }
 
-export default withRouter(App);
+function mapStateToProps(state, ownProps) {
+  return {
+    loading: selectors.loading(state),
+    namespaces: selectors.listNamespaces(state)
+  };
+}
+
+function mapDispatchToProps(dispatch, ownProps) {
+  return {
+    load() {
+      dispatch(actions.load());
+    }
+  };
+}
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(App));

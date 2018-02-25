@@ -1,12 +1,12 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { ErrorAlert } from 'pivotal-ui/react/alerts';
+import { ErrorAlert, InfoAlert } from 'pivotal-ui/react/alerts';
 import { Collapse } from 'pivotal-ui/react/collapse';
 import { Icon } from 'pivotal-ui/react/iconography';
 import { ListItem, UnorderedList } from 'pivotal-ui/react/lists';
 import { Panel } from 'pivotal-ui/react/panels';
-
-import { get, url } from './k8s';
+import { connect } from 'react-redux';
+import { selectors } from './redux';
 
 const strings = {
   topics: {
@@ -26,71 +26,49 @@ function capitalize(str) {
 class ResourceList extends Component {
   static propTypes = {
     namespace: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired
-  };
-
-  state = {
-    loading: true,
-    error: null,
-    resources: null
-  };
-
-  componentWillMount() {
-    this.mounted = true;
-    this.fetch();
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
-  }
-
-  fetch = (namespace = this.props.namespace) => {
-    this.setState({ loading: true }, async () => {
-      try {
-        const { namespace, type } = this.props;
-        const resources = await get(url`/apis/projectriff.io/v1/namespaces/${namespace}/${type}`);
-        if (!this.mounted) return;
-        this.setState({
-          loading: false,
-          resources
-        });
-      } catch (e) {
-        if (!this.mounted) return;
-        this.setState({
-          loading: false,
-          error: e
-        });
-      }
-    });
+    type: PropTypes.string.isRequired,
+    resources: PropTypes.array,
+    loading: PropTypes.bool.isRequired,
+    error: PropTypes.any
   };
 
   render() {
-    const { type } = this.props;
-    const { loading, error, resources } = this.state;
+    const { type, resources, loading, error } = this.props;
 
     return (
       <Panel header={capitalize(strings[type].plural)} loading={loading}>
-        {loading && !resources
-          ? <Icon src='spinner-md' style={{'fontSize': '48px'}} />
-          : <Fragment>
-            {error
-              ? <ErrorAlert withIcon>
-                  Unable to load {strings[type].plural}
-                  <Collapse header='Detail'>{'' + error}</Collapse>
-                </ErrorAlert>
-              : resources.items.length
-                ? <UnorderedList unstyled>
-                    {resources.items.map(({ metadata: { name, uid }}) => {
-                      return <ListItem key={uid}>{name}</ListItem>
-                    })}
-                  </UnorderedList>
-                : `No ${strings[type].plural} found`
-            }
-          </Fragment>
+        {loading && !resources ?
+          <Icon src='spinner-md' style={{'fontSize': '48px'}} />
+        : error ?
+          <ErrorAlert withIcon>
+            Unable to load {strings[type].plural}.
+            <Collapse header='Detail'>
+              {'' + error}
+            </Collapse>
+          </ErrorAlert>
+        : resources.length ?
+          <UnorderedList unstyled>
+            {resources.map(({ metadata: { name, uid }}) => {
+              return <ListItem key={uid}>{name}</ListItem>
+            })}
+          </UnorderedList>
+        :
+          <InfoAlert withIcon>
+            No {strings[type].plural} found
+          </InfoAlert>
         }
       </Panel>
     );
   }
 }
 
-export default ResourceList;
+function mapStateToProps(state, ownProps) {
+  const { type, namespace } = ownProps;
+  return {
+    loading: selectors.loading(state, type),
+    resources: selectors.listResource(state, type, namespace),
+    error: selectors.error(state, type)
+  };
+}
+
+export default connect(mapStateToProps)(ResourceList);

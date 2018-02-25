@@ -15,9 +15,7 @@ function watch(url, resourceVersion) {
   const socket = new WebSocket(`${protocol === 'https:' ? 'wss:' : 'ws:'}//${host}${url}?watch&resourceVersion=${resourceVersion}`);
   const events = new EventEmitter();
   socket.addEventListener('message', ({ data }) => {
-    data = JSON.parse(data);
-    console.log(data);
-    events.emit('data', data);
+    events.emit('data', JSON.parse(data));
   });
   socket.addEventListener('close', () => {
     // TODO handle reconnect?
@@ -27,26 +25,15 @@ function watch(url, resourceVersion) {
   return events;
 }
 
-export async function listNamespaces() {
-  return list('/api/v1/namespaces', 'namespaces');
+function createResourceClient(path) {
+  return {
+    list: list.bind(null, path),
+    watch: watch.bind(null, path)
+  };
 }
 
-export function watchNamespaces(resourceVersion) {
-  return watch('/api/v1/namespaces', resourceVersion);
-}
-
-export function listFunctions() {
-  return list('/apis/projectriff.io/v1/functions/', 'functions');
-}
-
-export function watchFunctions(resourceVersion) {
-  return watch('/apis/projectriff.io/v1/functions/', resourceVersion);
-}
-
-export function listTopics() {
-  return list('/apis/projectriff.io/v1/topics/', 'topics');
-}
-
-export function watchTopics(resourceVersion) {
-  return watch('/apis/projectriff.io/v1/topics/', resourceVersion);
-}
+export default {
+  namespaces: createResourceClient('/api/v1/namespaces'),
+  functions: createResourceClient('/apis/projectriff.io/v1/functions'),
+  topics: createResourceClient('/apis/projectriff.io/v1/topics')
+};

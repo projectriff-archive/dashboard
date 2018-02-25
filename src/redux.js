@@ -1,4 +1,4 @@
-import * as k8s from './k8s';
+import k8s from './k8s';
 
 const NAMESPACES = 'namespaces';
 const FUNCTIONS = 'functions';
@@ -52,7 +52,9 @@ export function reducer(state = {}, action) {
                   ...state[action.resourceType].resource.metadata,
                   resourceVersion: action.change.object.metadata.resourceVersion
                 },
-                items: state[action.resourceType].resource.items.concat(action.change.object)
+                items: state[action.resourceType].resource.items
+                  .concat(action.change.object)
+                  .sort((a, b) => a.metadata.name.localeCompare(b.metadata.name))
               }
             }
           };
@@ -99,17 +101,14 @@ export function reducer(state = {}, action) {
 }
 
 export const actions = {
-  _load: (resourceType, list, watch) => async dispatch => {
+  _load: (resourceType, client) => async dispatch => {
     dispatch({ type: RESOURCE_LOADING, resourceType });
     try {
-      const resource = await list();
-      if (watch) {
-        let { resourceVersion } = resource.metadata;
-        const watcher = watch(resourceVersion);
-        watcher.on('data', change => {
-          dispatch({ type: RESOURCE_CHANGED, resourceType, change });
-        });
-      }
+      const resource = await client.list();
+      const watcher = client.watch(resource.metadata.resourceVersion);
+      watcher.on('data', change => {
+        dispatch({ type: RESOURCE_CHANGED, resourceType, change });
+      });
       dispatch({ type: RESOURCE_LOADED, resourceType, resource });
     } catch (error) {
       dispatch({ type: RESOURCE_ERROR, resourceType, error });
@@ -120,9 +119,9 @@ export const actions = {
     dispatch(actions.loadFunctions());
     dispatch(actions.loadTopics());
   },
-  loadNamespaces: () => actions._load(NAMESPACES, k8s.listNamespaces, k8s.watchNamespaces),
-  loadFunctions: () => actions._load(FUNCTIONS, k8s.listFunctions, k8s.watchFunctions),
-  loadTopics: () => actions._load(TOPICS, k8s.listTopics, k8s.watchTopics)
+  loadNamespaces: () => actions._load(NAMESPACES, k8s.namespaces),
+  loadFunctions: () => actions._load(FUNCTIONS, k8s.functions),
+  loadTopics: () => actions._load(TOPICS, k8s.topics)
 };
 
 export const selectors = {

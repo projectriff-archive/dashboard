@@ -29,8 +29,20 @@ class ResourceList extends Component {
     type: PropTypes.string.isRequired,
     resources: PropTypes.array,
     loading: PropTypes.bool.isRequired,
-    error: PropTypes.any
+    error: PropTypes.any,
+    children: PropTypes.func
   };
+
+  renderResource(item) {
+    const { uid, name } = item.metadata;
+    const renderItem = this.props.children;
+    return (
+      <ListItem key={uid}>
+        {name}
+        {renderItem && renderItem(item)}
+      </ListItem>
+    );
+  }
 
   render() {
     const { type, resources, loading, error } = this.props;
@@ -48,9 +60,7 @@ class ResourceList extends Component {
           </ErrorAlert>
         : resources.length ?
           <UnorderedList unstyled>
-            {resources.map(({ metadata: { name, uid }}) => {
-              return <ListItem key={uid}>{name}</ListItem>
-            })}
+            {resources.map(this.renderResource, this)}
           </UnorderedList>
         :
           <InfoAlert withIcon>

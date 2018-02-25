@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ResourceList from './ResourceList';
+import FunctionList from './FunctionList';
+import TopicList from './TopicList';
 import { Grid, FlexCol } from 'pivotal-ui/react/flex-grids';
 
 class Namespace extends Component {
@@ -14,10 +15,10 @@ class Namespace extends Component {
     return (
       <Grid>
         <FlexCol>
-          <ResourceList type='functions' namespace={namespace} />
+          <FunctionList namespace={namespace} />
         </FlexCol>
         <FlexCol>
-          <ResourceList type='topics' namespace={namespace} />
+          <TopicList namespace={namespace} />
         </FlexCol>
       </Grid>
     );

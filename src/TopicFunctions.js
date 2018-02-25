@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { ListItem, UnorderedList } from 'pivotal-ui/react/lists';
-import { Icon } from 'pivotal-ui/react/iconography';
-import 'pivotal-ui/css/whitespace';
+import { UnorderedList } from 'pivotal-ui/react/lists';
+import { InputListItem, OutputListItem } from './IconListItem';
 import { connect } from 'react-redux';
 import { selectors } from './redux';
 
@@ -10,32 +9,34 @@ import { selectors } from './redux';
 class TopicFunctions extends Component {
   static propTypes = {
     topic: PropTypes.object.isRequired,
-    sources: PropTypes.array.isRequired,
-    consumers: PropTypes.array.isRequired
+    sources: PropTypes.array,
+    consumers: PropTypes.array,
+    loading: PropTypes.bool.isRequired
   };
 
   render() {
-    const { topic, sources, consumers } = this.props;
+    const { topic, sources, consumers, loading } = this.props;
+    if (loading) return null;
     return (
       <UnorderedList unstyled>
-        <ListItem><Icon src='arrow_forward' verticalAlign='baseline' className='mrs' /><em>direct access</em></ListItem>
+        <InputListItem><em>direct access</em></InputListItem>
         {sources.map(source => {
           const { uid, namespace, name } = source.metadata;
           return (
-            <ListItem key={uid}><Icon src='arrow_forward' verticalAlign='baseline' className='mrs' />
+            <InputListItem key={uid}>
               {namespace !== topic.metadata.namespace ? `${namespace}/${name}` : name}
-            </ListItem>
+            </InputListItem>
           );
         })}
         {consumers.map(consumer => {
           const { uid, namespace, name } = consumer.metadata;
           return (
-            <ListItem key={uid}><Icon src='arrow_back' verticalAlign='baseline' className='mrs' />
+            <OutputListItem key={uid}>
               {namespace !== topic.metadata.namespace ? `${namespace}/${name}` : name}
-            </ListItem>
+            </OutputListItem>
           );
         })}
-        {!consumers.length && <ListItem><Icon src='arrow_back' verticalAlign='baseline' className='mrs' /><em>none</em></ListItem>}
+        {!consumers.length && <OutputListItem>><em>none</em></OutputListItem>}
       </UnorderedList>
     );
   }
@@ -45,8 +46,9 @@ function mapStateToProps(state, ownProps) {
   const { topic } = ownProps;
   const funcs = selectors.listResource(state, 'functions');
   return {
-    sources: funcs.filter(func => func.spec.output === topic.metadata.name),
-    consumers:  funcs.filter(func => func.spec.input === topic.metadata.name)
+    sources: funcs && funcs.filter(func => func.spec.output === topic.metadata.name),
+    consumers:  funcs && funcs.filter(func => func.spec.input === topic.metadata.name),
+    loading:  selectors.loading(state, 'functions')
   };
 }
 

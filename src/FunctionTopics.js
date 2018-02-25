@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { ListItem, UnorderedList } from 'pivotal-ui/react/lists';
-import { Icon } from 'pivotal-ui/react/iconography';
-import 'pivotal-ui/css/whitespace';
+import { UnorderedList } from 'pivotal-ui/react/lists';
+import { InputListItem, OutputListItem } from './IconListItem';
 
 class FunctionTopics extends Component {
   static propTypes = {
@@ -13,8 +12,8 @@ class FunctionTopics extends Component {
     const { func } = this.props;
     return (
       <UnorderedList unstyled>
-        <ListItem><Icon src='arrow_forward' verticalAlign='baseline' className='mrs' />{func.spec.input}</ListItem>
-        <ListItem><Icon src='arrow_back' verticalAlign='baseline' className='mrs' />{func.spec.output || <em>reply channel</em>}</ListItem>
+        <InputListItem>{func.spec.input}</InputListItem>
+        <OutputListItem>{func.spec.output || <em>reply channel</em>}</OutputListItem>
       </UnorderedList>
     );
   }

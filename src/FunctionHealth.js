@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { selectors } from './redux';
+import { selectors, connect } from './resourceRedux';
 import * as health from './health';
+import k8s from './k8s';
 
 class FunctionHealth extends Component {
   static propTypes = {
@@ -38,9 +38,9 @@ class FunctionHealth extends Component {
 function mapStateToProps(state, ownProps) {
   const { namespace, name } = ownProps;
   return {
-    deployment: selectors.getResource(state, 'deployments', namespace, name),
-    pods: (selectors.listResource(state, 'pods') || []).filter(pod => pod.metadata.namespace === namespace && pod.metadata.labels.function === name),
-    loading: selectors.loading(state, 'deployments') || selectors.loading(state, 'pods')
+    deployment: selectors.getResource(state, k8s.deployments.type, namespace, name),
+    pods: (selectors.listResource(state, k8s.pods.type) || []).filter(pod => pod.metadata.namespace === namespace && pod.metadata.labels.function === name),
+    loading: selectors.loading(state, k8s.deployments.type, k8s.pods.type)
   };
 }
 

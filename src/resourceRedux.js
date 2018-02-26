@@ -1,17 +1,13 @@
 import k8s from './k8s';
-
-const NAMESPACES = 'namespaces';
-const FUNCTIONS = 'functions';
-const TOPICS = 'topics';
-const DEPLOYMENTS = 'deployments';
-const PODS = 'pods';
+export { connect } from 'react-redux';
 
 const RESOURCE_LOADING = 'RESOURCE_LOADING';
 const RESOURCE_ERROR = 'RESOURCE_ERROR';
 const RESOURCE_LOADED = 'RESOURCE_LOADED';
 const RESOURCE_CHANGED = 'RESOURCE_CHANGED';
-
-const systemNamespaces = new Set(['docker', 'kube-public', 'kube-system']);
+const RESOURCE_CHANGED_ADDED = 'ADDED';
+const RESOURCE_CHANGED_MODIFIED = 'MODIFIED';
+const RESOURCE_CHANGED_DELETED = 'DELETED';
 
 export function reducer(state = {}, action) {
   switch (action.type) {
@@ -43,7 +39,9 @@ export function reducer(state = {}, action) {
       };
     case RESOURCE_CHANGED:
       switch (action.change.type) {
-        case 'ADDED':
+        case RESOURCE_CHANGED_ADDED:
+        case RESOURCE_CHANGED_MODIFIED:
+        case RESOURCE_CHANGED_DELETED:
           return {
             ...state,
             [action.resourceType]: {
@@ -54,43 +52,25 @@ export function reducer(state = {}, action) {
                   ...state[action.resourceType].resource.metadata,
                   resourceVersion: action.change.object.metadata.resourceVersion
                 },
-                items: state[action.resourceType].resource.items
-                  .concat(action.change.object)
-                  .sort((a, b) => a.metadata.name.localeCompare(b.metadata.name))
-              }
-            }
-          };
-        case 'MODIFIED':
-        return {
-          ...state,
-          [action.resourceType]: {
-            ...state[action.resourceType],
-            resource: {
-              ...state[action.resourceType].resource,
-              metadata: {
-                ...state[action.resourceType].resource.metadata,
-                resourceVersion: action.change.object.metadata.resourceVersion
-              },
-              items: state[action.resourceType].resource.items.map(
-                item => item.metadata.uid === action.change.object.metadata.uid
-                  ? action.change.object
-                  : item
-              )
-            }
-          }
-        };
-        case 'DELETED':
-          return {
-            ...state,
-            [action.resourceType]: {
-              ...state[action.resourceType],
-              resource: {
-                ...state[action.resourceType].resource,
-                metadata: {
-                  ...state[action.resourceType].resource.metadata,
-                  resourceVersion: action.change.object.metadata.resourceVersion
-                },
-                items: state[action.resourceType].resource.items.filter(item => item.metadata.uid !== action.change.object.metadata.uid)
+                items:
+                  action.change.type === RESOURCE_CHANGED_ADDED ?
+                    state[action.resourceType].resource.items
+                      .concat(action.change.object)
+                      .sort((a, b) => a.metadata.name.localeCompare(b.metadata.name))
+                  : action.change.type === RESOURCE_CHANGED_MODIFIED ?
+                    state[action.resourceType].resource.items.map(
+                      item => item.metadata.uid === action.change.object.metadata.uid
+                        ? action.change.object
+                        : item
+                    )
+                  : action.change.type === RESOURCE_CHANGED_DELETED ?
+                    state[action.resourceType].resource.items
+                      .filter(item => item.metadata.uid !== action.change.object.metadata.uid)
+                  :
+                    (() => {
+                      // should never get here
+                      throw new Error(`Unknown ${RESOURCE_CHANGED} subtype ${action.change.type}`);
+                    })()
               }
             }
           };
@@ -103,7 +83,8 @@ export function reducer(state = {}, action) {
 }
 
 export const actions = {
-  _load: (resourceType, client) => async dispatch => {
+  _load: client => async dispatch => {
+    const resourceType = client.type;
     dispatch({ type: RESOURCE_LOADING, resourceType });
     try {
       const resource = await client.list();
@@ -117,17 +98,12 @@ export const actions = {
     }
   },
   load: () => dispatch => {
-    dispatch(actions.loadNamespaces());
-    dispatch(actions.loadFunctions());
-    dispatch(actions.loadTopics());
-    dispatch(actions.loadDeployments());
-    dispatch(actions.loadPods());
-  },
-  loadNamespaces: () => actions._load(NAMESPACES, k8s.namespaces),
-  loadFunctions: () => actions._load(FUNCTIONS, k8s.functions),
-  loadTopics: () => actions._load(TOPICS, k8s.topics),
-  loadDeployments: () => actions._load(DEPLOYMENTS, k8s.deployments),
-  loadPods: () => actions._load(PODS, k8s.pods)
+    dispatch(actions._load(k8s.namespaces));
+    dispatch(actions._load(k8s.functions));
+    dispatch(actions._load(k8s.topics));
+    dispatch(actions._load(k8s.deployments));
+    dispatch(actions._load(k8s.pods));
+  }
 };
 
 export const selectors = {
@@ -144,17 +120,14 @@ export const selectors = {
     });
   },
   listNamespaces(state) {
-    const namespaces = selectors.listResource(state, 'namespaces');
-    return namespaces && namespaces.filter(ns => !systemNamespaces.has(ns.metadata.name))
+    const namespaces = selectors.listResource(state, k8s.namespaces.type);
+    return namespaces && namespaces.filter(ns => !k8s.systemNamespaces.has(ns.metadata.name))
   },
-  loading(state, type) {
-    if (type) {
+  loading(state, ...types) {
+    if (types.length === 0) types = Object.keys(state);
+    if (types.length === 0) return true;
+    return types.some(type => {
       return state[type] ? state[type].loading : true;
-    }
-    const keys = Object.keys(state);
-    if (!keys.length) return true;
-    return keys.some(type => {
-      return state[type].loading;
     });
   },
   error(state, type) {

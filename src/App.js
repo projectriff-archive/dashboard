@@ -5,8 +5,7 @@ import Namespace from './Namespace';
 import './App.css';
 import { Grid, FlexCol } from 'pivotal-ui/react/flex-grids';
 import { Route, Redirect, Switch, withRouter } from 'react-router-dom';
-import { connect } from 'react-redux';
-import { actions, selectors } from './redux';
+import { actions, selectors, connect } from './resourceRedux';
 
 class App extends Component {
   static propTypes = {

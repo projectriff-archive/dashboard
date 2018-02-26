@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import ResourceList from './ResourceList';
 import FunctionTopics from './FunctionTopics';
 import FunctionHealth from './FunctionHealth';
+import k8s from './k8s';
 
 class FunctionList extends Component {
   static propTypes = {
@@ -23,7 +24,7 @@ class FunctionList extends Component {
     const { namespace } = this.props;
 
     return (
-      <ResourceList type='functions' namespace={namespace}>
+      <ResourceList type={k8s.functions.type} namespace={namespace}>
         {this.renderFunction}
       </ResourceList>
     );

@@ -27,17 +27,20 @@ function watch(url, params) {
   return events;
 }
 
-function createResourceClient(path, defaultParams) {
+function createResourceClient(type, path, defaultParams) {
   return {
+    type,
     list: params => list(path, { ...defaultParams, ...params }),
     watch: params => watch(path, { ...defaultParams, ...params })
   };
 }
 
 export default {
-  namespaces: createResourceClient('/api/v1/namespaces'),
-  functions: createResourceClient('/apis/projectriff.io/v1/functions'),
-  topics: createResourceClient('/apis/projectriff.io/v1/topics'),
-  deployments: createResourceClient('/apis/extensions/v1beta1/deployments', { labelSelector: 'function' }),
-  pods: createResourceClient('/api/v1/pods', { labelSelector: 'function' })
+  namespaces: createResourceClient('namespaces', '/api/v1/namespaces'),
+  functions: createResourceClient('functions', '/apis/projectriff.io/v1/functions'),
+  topics: createResourceClient('topics', '/apis/projectriff.io/v1/topics'),
+  deployments: createResourceClient('deployments', '/apis/extensions/v1beta1/deployments', { labelSelector: 'function' }),
+  pods: createResourceClient('pods', '/api/v1/pods', { labelSelector: 'function' }),
+
+  systemNamespaces: new Set(['docker', 'kube-public', 'kube-system'])
 };

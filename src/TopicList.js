@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import ResourceList from './ResourceList';
 import TopicFunctions from './TopicFunctions';
+import k8s from './k8s';
 
 class TopicList extends Component {
   static propTypes = {
@@ -23,7 +24,7 @@ class TopicList extends Component {
     const { namespace } = this.props;
 
     return (
-      <ResourceList type='topics' namespace={namespace}>
+      <ResourceList type={k8s.topics.type} namespace={namespace}>
         {this.renderTopic}
       </ResourceList>
     );

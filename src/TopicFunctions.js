@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { UnorderedList } from 'pivotal-ui/react/lists';
 import { InputListItem, OutputListItem } from './IconListItem';
-import { connect } from 'react-redux';
-import { selectors } from './redux';
+import { selectors, connect } from './resourceRedux';
+import k8s from './k8s';
 
 // TODO pick a better name, I hate this
 class TopicFunctions extends Component {
@@ -44,11 +44,11 @@ class TopicFunctions extends Component {
 
 function mapStateToProps(state, ownProps) {
   const { topic } = ownProps;
-  const funcs = selectors.listResource(state, 'functions');
+  const funcs = selectors.listResource(state, k8s.functions.type);
   return {
     sources: funcs && funcs.filter(func => func.spec.output === topic.metadata.name),
     consumers:  funcs && funcs.filter(func => func.spec.input === topic.metadata.name),
-    loading:  selectors.loading(state, 'functions')
+    loading:  selectors.loading(state, k8s.functions.type)
   };
 }
 

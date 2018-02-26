@@ -5,15 +5,15 @@ import { Collapse } from 'pivotal-ui/react/collapse';
 import { Icon } from 'pivotal-ui/react/iconography';
 import { ListItem, UnorderedList } from 'pivotal-ui/react/lists';
 import { Panel } from 'pivotal-ui/react/panels';
-import { connect } from 'react-redux';
-import { selectors } from './redux';
+import { selectors, connect } from './resourceRedux';
+import k8s from './k8s';
 
 const strings = {
-  topics: {
+  [k8s.topics.type]: {
     singular: 'topic',
     plural: 'topics'
   },
-  functions: {
+  [k8s.functions.type]: {
     singular: 'function',
     plural: 'functions'
   }

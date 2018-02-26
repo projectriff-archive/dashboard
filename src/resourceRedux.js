@@ -109,7 +109,7 @@ export const actions = {
 export const selectors = {
   getResource(state, type, namespace, name) {
     const resources = selectors.listResource(state, type);
-    return resources && resources.find(resource => resource.metadata.namespace === namespace && resource.metadata.name === name);
+    return resources && resources.find(resource => (!namespace || resource.metadata.namespace === namespace) && resource.metadata.name === name);
   },
   listResource(state, type, namespace) {
     if (!state[type] || !state[type].resource) return null;

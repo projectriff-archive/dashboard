@@ -1,7 +1,6 @@
 import { EventEmitter } from 'events';
 import querystring from 'querystring'
 
-
 async function list(path, params, type) {
   const res = await fetch(`${path}?${querystring.stringify(params)}`);
   if (res.status >= 400) {

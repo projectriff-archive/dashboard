@@ -3,6 +3,8 @@ import k8s from './k8s';
 const NAMESPACES = 'namespaces';
 const FUNCTIONS = 'functions';
 const TOPICS = 'topics';
+const DEPLOYMENTS = 'deployments';
+const PODS = 'pods';
 
 const RESOURCE_LOADING = 'RESOURCE_LOADING';
 const RESOURCE_ERROR = 'RESOURCE_ERROR';
@@ -105,7 +107,7 @@ export const actions = {
     dispatch({ type: RESOURCE_LOADING, resourceType });
     try {
       const resource = await client.list();
-      const watcher = client.watch(resource.metadata.resourceVersion);
+      const watcher = client.watch({ resourceVersion: resource.metadata.resourceVersion });
       watcher.on('data', change => {
         dispatch({ type: RESOURCE_CHANGED, resourceType, change });
       });
@@ -118,13 +120,21 @@ export const actions = {
     dispatch(actions.loadNamespaces());
     dispatch(actions.loadFunctions());
     dispatch(actions.loadTopics());
+    dispatch(actions.loadDeployments());
+    dispatch(actions.loadPods());
   },
   loadNamespaces: () => actions._load(NAMESPACES, k8s.namespaces),
   loadFunctions: () => actions._load(FUNCTIONS, k8s.functions),
-  loadTopics: () => actions._load(TOPICS, k8s.topics)
+  loadTopics: () => actions._load(TOPICS, k8s.topics),
+  loadDeployments: () => actions._load(DEPLOYMENTS, k8s.deployments),
+  loadPods: () => actions._load(PODS, k8s.pods)
 };
 
 export const selectors = {
+  getResource(state, type, namespace, name) {
+    const resources = selectors.listResource(state, type);
+    return resources && resources.find(resource => resource.metadata.namespace === namespace && resource.metadata.name === name);
+  },
   listResource(state, type, namespace) {
     if (!state[type] || !state[type].resource) return null;
     const items = state[type].resource.items;

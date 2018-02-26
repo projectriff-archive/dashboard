@@ -37,9 +37,8 @@ class ResourceList extends Component {
     const { uid, name } = item.metadata;
     const renderItem = this.props.children;
     return (
-      <ListItem key={uid}>
-        {name}
-        {renderItem && renderItem(item)}
+      <ListItem key={uid} className='mvl'>
+        {renderItem ? renderItem(item) : name}
       </ListItem>
     );
   }

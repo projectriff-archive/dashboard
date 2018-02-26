@@ -13,7 +13,7 @@ class FunctionTopics extends Component {
     return (
       <UnorderedList unstyled>
         <InputListItem>{func.spec.input}</InputListItem>
-        <OutputListItem>{func.spec.output || <em>reply channel</em>}</OutputListItem>
+        <OutputListItem>{func.spec.output || <em className='type-neutral-2'>reply channel</em>}</OutputListItem>
       </UnorderedList>
     );
   }

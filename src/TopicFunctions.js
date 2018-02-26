@@ -19,7 +19,7 @@ class TopicFunctions extends Component {
     if (loading) return null;
     return (
       <UnorderedList unstyled>
-        <InputListItem><em>direct access</em></InputListItem>
+        <InputListItem><em className='type-neutral-2'>direct access</em></InputListItem>
         {sources.map(source => {
           const { uid, namespace, name } = source.metadata;
           return (
@@ -36,7 +36,7 @@ class TopicFunctions extends Component {
             </OutputListItem>
           );
         })}
-        {!consumers.length && <OutputListItem>><em>none</em></OutputListItem>}
+        {!consumers.length && <OutputListItem><em className='type-neutral-2'>none</em></OutputListItem>}
       </UnorderedList>
     );
   }

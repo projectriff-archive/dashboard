@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import ResourceList from './ResourceList';
 import FunctionTopics from './FunctionTopics';
@@ -9,7 +9,12 @@ class FunctionList extends Component {
   };
 
   renderFunction(func) {
-    return <FunctionTopics func={func} />;
+    return (
+      <Fragment>
+        {func.metadata.name}
+        <FunctionTopics func={func} />
+      </Fragment>
+    );
   }
 
   render() {

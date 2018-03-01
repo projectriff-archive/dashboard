@@ -4,6 +4,7 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
+    "moment": "^2.20.1",
     "pivotal-ui": "^14.0.0",
     "prop-types": "^15.6.0",
     "react": "^16.2.0",

@@ -15,7 +15,7 @@ class FunctionTopics extends Component {
 
   render() {
     const { func, inputTopic, outputTopic, loading } = this.props;
-    if (loading) return null;
+    if (loading || !func || !inputTopic) return null;
     return (
       <UnorderedList unstyled>
         <InputListItem>

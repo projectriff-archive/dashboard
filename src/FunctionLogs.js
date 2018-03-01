@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Panel } from 'pivotal-ui/react/panels';
 import { selectors, connect } from './resourceRedux';
 import k8s from './k8s';
 import moment from 'moment';
@@ -11,10 +10,17 @@ function byTimestamp(a, b) {
   else return 1;
 }
 
+function charCodesProduct(str) {
+  let product = 1;
+  for (let i = 0; i < str.length; i++) {
+    product *= str.charCodeAt(i);
+  }
+  return product;
+}
+
 class FunctionLogs extends Component {
   static propTypes = {
-    namespace: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
+    func: PropTypes.object.isRequired,
     pods: PropTypes.array.isRequired,
     loading: PropTypes.bool.isRequired
   };
@@ -82,34 +88,33 @@ class FunctionLogs extends Component {
   }
 
   render() {
-    const { name, loading } = this.props;
+    const { loading } = this.props;
     const { logs } = this.state;
     if (loading) return null;
     const lines = Object.keys(logs).reduce((lines, log) => lines.concat(logs[log]), []);
     lines.sort(byTimestamp);
     return (
-      <Panel header={`Function logs: ${name}`} loading={loading}>
-        <code style={{ wordBreak: 'break-all' }}>
-          {lines.map(l => {
-            return (
-              <div key={`${l.namespace}/${l.name}/${l.container}/${l.timestamp}`}>
-                <span>[{moment(l.timestamp).format('LTS')}]</span>
-                <span>[{l.pod.split('-')[2]}]</span>
-                <span> </span>
-                <span>{l.content}</span>
-              </div>
-            );
-          })}
-        </code>
-      </Panel>
+      <code style={{ wordBreak: 'break-all' }}>
+        {lines.map(line => {
+          const instance = line.pod.split('-')[2]
+          return (
+            <div key={`${line.namespace}/${line.name}/${line.container}/${line.timestamp}`} style={{ backgroundColor: `hsla(${charCodesProduct(instance) % 360}, 50%, 45%, 0.2)`}}>
+              <span>[{moment(line.timestamp).format('LTS')}]</span>
+              <span>[{instance}]</span>
+              <span> </span>
+              <span>{line.content}</span>
+            </div>
+          );
+        })}
+      </code>
     );
   }
 }
 
 function mapStateToProps(state, ownProps) {
-  const { namespace, name } = ownProps;
+  const { func } = ownProps;
   return {
-    pods: (selectors.listResource(state, k8s.pods.type) || []).filter(pod => pod.metadata.namespace === namespace && pod.metadata.labels.function === name),
+    pods: (selectors.listResource(state, k8s.pods.type) || []).filter(pod => pod.metadata.namespace === func.metadata.namespace && pod.metadata.labels.function === func.metadata.name),
     loading: selectors.loading(state, k8s.pods.type)
   };
 }

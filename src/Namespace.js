@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import FunctionList from './FunctionList';
 import TopicList from './TopicList';
 import { Grid, FlexCol } from 'pivotal-ui/react/flex-grids';
-import { Route } from 'react-router-dom';
-import FunctionLogs from './FunctionLogs';
+import { Switch, Route, Redirect } from 'react-router-dom';
+import Function from './Function';
 
 class Namespace extends Component {
   static propTypes = {
@@ -24,9 +24,11 @@ class Namespace extends Component {
             <TopicList namespace={namespace} />
           </FlexCol>
         </Grid>
-        <Route path="/namespaces/:namespace/functions/:name" render={({ match: { params: { name } }}) =>
-          <FunctionLogs key={`${namespace}/${name}`} namespace={namespace} name={name} />
-        } />
+        <Switch>
+          <Route path='/namespaces/:namespace/functions/:func' component={Function} />
+          <Route path='/namespaces/:namespace' exact />
+          <Redirect to={`/namespaces/${namespace}`} />
+        </Switch>
       </Fragment>
     );
   }

@@ -1,8 +1,11 @@
 jobs:
   include:
-    - language: node_js
-      node_js: 8
-    - sudo: required
-      services:
-        - docker
-      script: make dockerize
+  - language: node_js
+    node_js: 8
+  - sudo: required
+    services:
+    - docker
+    script: make dockerize
+notifications:
+  slack:
+    secure: gd7MjIG233+O7SQl0b1XDfYagoJU3HKcHhgIfur31idbf7OpM+n3BC36UjCn94cGdgs1jsVRMC4OIYK+GIsktKLNivZIdYwrphZ+ik4fpMIQChFrncLsO/mq7fQUM7bO4TR4GPxS4qMazc3tHdD9UZ2HNmXl5BMHwtH1CsdbTJHY55aTcEntIYNj0Cdz702E5cJy4PPhiVJlw0VOHTlh2qGgFbAnAUE7FDTZVYJyc3Jie8aiOTJ7XT9bhBrjIM9ZkYjCey7FMVOkUvfGboA6K8FBEXz9Le5GI4RtQBqL+Z7MILq/kjdaO9+zDgxY9bEYpHY+noivverUpt/jTZHescnkq0EP7aXlXhpIZTQHdaLYJYsBx/Y30wsuWBCoDQOx/eRQ94JA2+DxjysU3gTktYkSsBRqnGR7V4hbJyJqed9XU0SBPAyfllIgFU5Pm2p8tUm9Lw/1Idovx8PLZ6PYzc2OSKGODD4jay7Yn83Jdr2tqQ9D2GL7yT/xyQ0oC057k81z2x3DFsc8K+ZwmpxMYyEJ0XETNuvAuA7S3NOntAl56c4XpvV1DBzsR4VdcVjPNx8AGTEV3sVYZ5ybUFTw0lECySxNooqXxv3brqwxcCBKKTipZQdV9Y9d1vrpWVOZFp2HXcvct/7QnHZn0DBe/ryHjv+RBS8oA7xbVkJkl88=

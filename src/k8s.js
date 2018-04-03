@@ -36,8 +36,8 @@ function createResourceClient(type, path, defaultParams) {
 
 export default {
   namespaces: createResourceClient('namespaces', '/api/v1/namespaces'),
-  functions: createResourceClient('functions', '/apis/projectriff.io/v1/functions'),
-  topics: createResourceClient('topics', '/apis/projectriff.io/v1/topics'),
+  functions: createResourceClient('functions', '/apis/projectriff.io/v1alpha1/functions'),
+  topics: createResourceClient('topics', '/apis/projectriff.io/v1alpha1/topics'),
   deployments: createResourceClient('deployments', '/apis/extensions/v1beta1/deployments', { labelSelector: 'function' }),
   pods: createResourceClient('pods', '/api/v1/pods', { labelSelector: 'function' }),
 

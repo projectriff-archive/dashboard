@@ -1,4 +1,4 @@
-# riff Dashboard [![Build Status](https://travis-ci.org/projectriff/dashboard.svg?branch=master)](https://travis-ci.org/projectriff/dashboard)
+# riff Dashboard [![Build Status](https://travis-ci.com/projectriff/dashboard.svg?branch=master)](https://travis-ci.com/projectriff/dashboard)
 
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 
